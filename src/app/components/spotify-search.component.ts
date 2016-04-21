@@ -1,8 +1,8 @@
-import { Http }                                   from 'angular2/http';
-import { Component, Output, Input, EventEmitter } from 'angular2/core';
-import { Control, FORM_DIRECTIVES }               from 'angular2/common';
-import { Observable } from 'rxjs/Observable';
-import { Observer }   from 'rxjs/Observer';
+import { Component, Output, Input, EventEmitter, Injectable } from 'angular2/core';
+import { Http, Response }           from 'angular2/http';
+import { Control, FORM_DIRECTIVES } from 'angular2/common';
+import { Observable }               from 'rxjs/Observable';
+import { Observer }                 from 'rxjs/Observer';
 
 
 /**
@@ -45,36 +45,75 @@ class SearchResult {
 
 
 /**
+ * Define SpotifySearchService.
+ */
+@Injectable()
+class SpotifySearchService {
+
+  // A base url for spotify artist search.
+  private baseUrl = 'https://api.spotify.com/v1/search?type=artist';
+
+  private dataObserver: Observer<Response>;
+
+  // Inject Http service.
+  constructor( private _http: Http ) { }
+
+  /**
+   * @return {string} A Spotify URL for artist search with the specified term.
+   */
+  buildUrl( searchTerm ) {
+    return this.baseUrl + '&q=' + searchTerm;
+  };
+
+  /**
+   * Load items by performing search based on the specified search term.
+   */
+  loadItems( searchTerm ) {
+    // GET, convert the response to json and extract required data from it.
+    return this._http
+      .get( this.buildUrl( searchTerm ) )
+      .map(
+        ( res: Response ) => {
+          let data = res.json();
+          // If data exists extract items, else [].
+          return data ? data.artists.items : [];
+        });
+  } // end loadItems
+}
+
+/**
  * The wrapper component of the spotify-search functionality.
  */
 @Component({
   selector: 'spotify-search-component',    // <selector-name></selector-name>
   directives: [ SearchBox, SearchResult ], // Register child components.
+  providers:  [ SpotifySearchService ],
   template: `
-  <search-box (valueChanged)="handleChange( $event )"></search-box>
-  <hr>
-  <search-result [dataItems]="data"></search-result>
-  `
+    <search-box (valueChanged)="search( $event )"></search-box>
+    <hr>
+    <search-result [dataItems]="data"></search-result>
+    `
 })
 export class SpotifySearchComponent {
-  private data: Observable<any>;
-  private dataObserver: Observer<any>;
+  private data: Observable<Response>;
+  private dataObserver: Observer<Response>;
 
-  constructor( private _http: Http ) {
+  constructor( private _http: Http,
+               private _search: SpotifySearchService ) {
     this.data = new Observable( observer => this.dataObserver = observer );
   }
 
-  handleChange( searchTerm ) {
-    // Reject if the search term is empty, else prepare a request URL.
-    if ( ! searchTerm ) { return; }
-    let url = 'https://api.spotify.com/v1/search?q=' + searchTerm + '&type=artist';
-
-    // GET, convert the result to json and subscribe for changes.
-    this._http.get( url ).map(( response ) => {
-      let artists = response.json().artists;
-      return artists.items;
-   }).subscribe( result => {
-     this.dataObserver.next( result );
-   }, error => console.log( 'Could not load artists' ) );
-  }
+  /**
+   * Perform GET request to spotify API for artist data.
+   * Invoked when user's input changes.
+   */
+  search( searchTerm: string ) {
+    this._search
+      .loadItems( searchTerm )
+      .subscribe(
+        ( res: Response ) => { this.dataObserver.next( res ); },
+        error => console.log( 'Could not load artists' ),
+        ()    => console.log( 'Done loading artists' )
+    );
+  } // end search
 }

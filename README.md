@@ -1,7 +1,15 @@
 # Angular2 searchbox
 
+## Reference
 - [angular2-webpack-starter](https://github.com/AngularClass/angular2-webpack-starter) by AngularClass
 - [Observables and Reactive Programming in Angular 2](http://blog.rangle.io/observables-and-reactive-programming-in-angular-2/) by Tyler Borchert
+
+---
+
+## Objectives
+- Become accustomed with angular2-webpack-starter.
+- Learn Observables.
+- Build a simple searchbox component.
 
 ---
 
@@ -9,13 +17,6 @@
 - `npm start`
 - `npm run server:dev:hmr` to use Hot Module Replacement.
 - [http://0.0.0.0:3000](http://0.0.0.0:3000) or [http://localhost:3000](http://localhost:3000)
-
----
-
-## Objectives
-- Become accustomed with angular2-webpack-starter.
-- Learn observables.
-- Build a simple searchbox component.
 
 ---
 
@@ -34,6 +35,12 @@
 - A variable is only changed when its state is mutated by assigning a new or updated value.
 - The reactive approach allows variables to develop a history of evolving change, asynchronously being updated to the values of other points of data.
 - Reactive programming as opposed to imperative programming.
+
+### Angular2 Pipes
+
+
+
+
 
 ---
 
